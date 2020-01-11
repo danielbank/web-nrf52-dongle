@@ -18,5 +18,3 @@ npm install -g polymer-cli
 ```sh
 polymer serve --open
 ```
-
-or use: https://www.npmjs.com/package/http-server
