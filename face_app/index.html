@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="face-api.js"></script>
+</head>
+<body>
+  <div class="center-content page-container">
+    <div style="position: relative" class="margin">
+      <video onloadedmetadata="onPlay(this)" id="inputVideo" autoplay muted playsinline></video>
+      <canvas id="overlay" />
+    </div>
+  </body>
+
+  <script>
+    // ssd_mobilenetv1 options
+    const SSD_MOBILENETV1 = 'ssd_mobilenetv1'
+    let minConfidence = 0.5
+    let inputSize = 224
+    let withBoxes = true
+
+    function getFaceDetectorOptions() {
+      return new faceapi.SsdMobilenetv1Options({ minConfidence })
+    }
+
+    function isFaceDetectionModelLoaded() {
+      return faceapi.nets.ssdMobilenetv1.params
+    }
+
+    async function onPlay() {
+      const videoEl = document.getElementById('inputVideo')
+      if(videoEl.paused || videoEl.ended || !isFaceDetectionModelLoaded())
+        return setTimeout(() => onPlay())
+
+      const options = getFaceDetectorOptions()
+
+      const ts = Date.now()
+
+      const result = await faceapi.detectSingleFace(videoEl, options).withFaceExpressions()
+
+      if (result) {
+        const canvas = document.getElementById('overlay')
+        const dims = faceapi.matchDimensions(canvas, videoEl, true)
+
+        const resizedResult = faceapi.resizeResults(result, dims)
+        const minConfidence = 0.05
+        if (withBoxes) {
+          faceapi.draw.drawDetections(canvas, resizedResult)
+        }
+        faceapi.draw.drawFaceExpressions(canvas, resizedResult, minConfidence)
+      }
+
+      setTimeout(() => onPlay())
+    }
+
+    window.addEventListener('load', async function () {
+      // load face detection and face expression recognition models
+      await faceapi.nets.ssdMobilenetv1.load('/ssd_mobilenetv1_model-weights_manifest.json')
+      await faceapi.loadFaceExpressionModel('/')
+
+      // try to access users webcam and stream the images
+      // to the video element
+      const stream = await navigator.mediaDevices.getUserMedia({ video: {} })
+      const videoEl = document.getElementById('inputVideo')
+      videoEl.srcObject = stream
+    })
+  </script>
+
+  <style>
+    .page-container {
+      left: 0;
+      right: 0;
+      margin: auto;
+      margin-top: 20px;
+      padding-left: 280px;
+      display: inline-flex !important;
+    }
+
+    @media only screen and (max-width : 992px) {
+      .page-container {
+        padding-left: 0;
+        display: flex !important;
+      }
+    }
+
+    .center-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    #overlay, .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    #facesContainer canvas {
+      margin: 10px;
+    }
+  </style>
+</body>
+</html>
