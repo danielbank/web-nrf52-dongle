@@ -4,6 +4,9 @@
   <script src="face-api.js"></script>
 </head>
 <body>
+  <div>
+    <button id="connect_usb" type="button">Connect to USB</button>
+  </div>
   <div class="center-content page-container">
     <div style="position: relative" class="margin">
       <video onloadedmetadata="onPlay(this)" id="inputVideo" autoplay muted playsinline></video>
@@ -12,15 +15,15 @@
   </body>
 
   <script>
+/*******************************/
+/* FACE EXPRESSION RECOGNITION */
+/*******************************/
+
     // ssd_mobilenetv1 options
     const SSD_MOBILENETV1 = 'ssd_mobilenetv1'
     let minConfidence = 0.5
     let inputSize = 224
     let withBoxes = true
-
-    function getFaceDetectorOptions() {
-      return new faceapi.SsdMobilenetv1Options({ minConfidence })
-    }
 
     function isFaceDetectionModelLoaded() {
       return faceapi.nets.ssdMobilenetv1.params
@@ -31,7 +34,7 @@
       if(videoEl.paused || videoEl.ended || !isFaceDetectionModelLoaded())
         return setTimeout(() => onPlay())
 
-      const options = getFaceDetectorOptions()
+      const options = new faceapi.SsdMobilenetv1Options({ minConfidence })
 
       const ts = Date.now()
 
@@ -47,12 +50,117 @@
           faceapi.draw.drawDetections(canvas, resizedResult)
         }
         faceapi.draw.drawFaceExpressions(canvas, resizedResult, minConfidence)
+        const expression = getMostLikelyExpression(result, minConfidence)
+        sendExpressionToLED(expression)
       }
 
       setTimeout(() => onPlay())
     }
 
+    function getMostLikelyExpression(result, minConfidence) {
+      let mostLikelyExpression = 'neutral';
+      Object.keys(result.expressions).forEach((expression) => {
+        if (
+          result.expressions[expression] > minConfidence &&
+          result.expressions[expression] > result.expressions[mostLikelyExpression]) {
+            mostLikelyExpression = expression
+          }
+      })
+      return mostLikelyExpression
+    }
+
+/***********************************/
+/* END FACE EXPRESSION RECOGNITION */
+/***********************************/
+
+/***********/
+/* WEB USB */
+/***********/
+
+    // Web USB related
+    const usb_devices = new Map();
+    const _DongleTempUSBID = {
+      VID: 0x2fe3,
+      PID: 0x0100
+    }
+
+    const initWebUSB = async () => {
+      const connectUSBBtn = document.getElementById('connect_usb')
+
+      connectUSBBtn.addEventListener('click', async () => {
+        const device = await navigator.usb.requestDevice({ filters: [{ vendorId: _DongleTempUSBID.VID, productId: _DongleTempUSBID.PID }] })
+        openUSBDevice(device)
+      })
+
+      // Auto-connect to all devices previously approved ('paired')
+      const availableDevices = await navigator.usb.getDevices()
+      availableDevices.forEach(device => {
+        if (device.vendorId === _DongleTempUSBID.VID && device.productId === _DongleTempUSBID.PID) {
+          openUSBDevice(device)
+        }
+      })
+
+      navigator.usb.addEventListener('connect', evt => openUSBDevice(evt.device))
+    }
+
+    const openUSBDevice = async (device) => {
+      await device.open()
+      await device.selectConfiguration(1)
+      await device.claimInterface(0)
+
+      const deviceId = `${device.serialNumber}`
+
+      usb_devices.set(deviceId, device)
+
+      console.log(`connected USB[${deviceId}]`)
+    }
+
+    const sendColorToLED = (colorArr) => {
+      usb_devices.forEach(device => {
+        device.transferOut(2, new Uint8Array(colorArr));
+      })
+    }
+
+/***************/
+/* END WEB USB */
+/***************/
+
+/************/
+/* FACE APP */
+/************/
+    const rgb_codes = {
+      'happy': [0x01, 0, 255, 0],
+      'sad': [0x01, 0, 0, 255],
+      'angry': [0x01, 255, 0, 0],
+      'fearful': [0x01, 255, 255, 0],
+      'disgusted': [0x01, 255, 255, 255],
+      'surprised': [0x01, 0, 255, 255]
+    }
+
+    function debounce(func, wait, immediate) {
+      var timeout;
+      return function () {
+        var context = this, args = arguments;
+        clearTimeout(timeout);
+        timeout = setTimeout(function () {
+          timeout = null;
+          if (!immediate) func.apply(context, args);
+        }, wait);
+        if (immediate && !timeout) func.apply(context, args);
+      };
+    }
+
+    const sendExpressionToLED = debounce(function (expression) {
+      const colorArr = rgb_codes[expression]
+      if (colorArr) {
+        sendColorToLED()
+      }
+    }, 250);
+
     window.addEventListener('load', async function () {
+      // initialize the web usb connect button and connect to availabe usb devices
+      initWebUSB();
+
       // load face detection and face expression recognition models
       await faceapi.nets.ssdMobilenetv1.load('/ssd_mobilenetv1_model-weights_manifest.json')
       await faceapi.loadFaceExpressionModel('/')
@@ -63,6 +171,10 @@
       const videoEl = document.getElementById('inputVideo')
       videoEl.srcObject = stream
     })
+
+  /****************/
+  /* END FACE APP */
+  /****************/
   </script>
 
   <style>

@@ -168,3 +168,7 @@ Follow these instructions to install nrfutil: https://github.com/NordicSemicondu
 ## Build and Flash
 
 Follow instructions here: https://docs.zephyrproject.org/latest/boards/arm/nrf52840_pca10059/doc/nrf52840_pca10059.html
+
+## Face-Api.js
+
+Face expression demo source from here: https://github.com/justadudewhohacks/face-api.js
