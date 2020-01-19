@@ -1,22 +1,13 @@
-# TODO
-
--   use lit-element 2.0 (RC)
--   SVG of dongle (for wysiwyg UI)
--   on both USB and BLE side, use unique IDs (serial, mac, ?) as prefix of messages (IN and OUT)
--   for each BLE & USB connection open, add controls to send text and set RGB
-
 # Run the App
 
--   Install Polymer-CLI:
+-   Build the Demo App:
 
 ```sh
-npm install -g polymer-cli
+npm run build
 ```
 
--   Serve the App Using Polymer CLI:
+-   Run the Demo App:
 
 ```sh
-polymer serve --open
+npm run serve:prpl-server
 ```
-
-or use: https://www.npmjs.com/package/http-server

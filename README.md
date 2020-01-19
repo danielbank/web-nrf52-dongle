@@ -149,7 +149,14 @@ npm run serve:prpl-server
 
 ## 5. Let's Get Fancy
 
--   Make Your Own App
+-   Make your own app using Web USB & Web Bluetooth!
+
+-   For inspiration, I made a face expression matching app using [face-api.js](https://github.com/justadudewhohacks/face-api.js):
+
+```sh
+cd face_app
+npx http-server .
+```
 
 # Links
 
