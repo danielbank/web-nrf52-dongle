@@ -117,7 +117,7 @@
 
     const sendColorToLED = (colorArr) => {
       usb_devices.forEach(device => {
-        device.transferOut(2, new Uint8Array(colorArr));
+        device.transferOut(2, new Uint8Array([0x01, ...colorArr]));
       })
     }
 
@@ -128,34 +128,23 @@
 /************/
 /* FACE APP */
 /************/
+
     const rgb_codes = {
-      'happy': [0x01, 0, 255, 0],
-      'sad': [0x01, 0, 0, 255],
-      'angry': [0x01, 255, 0, 0],
-      'fearful': [0x01, 255, 255, 0],
-      'disgusted': [0x01, 255, 255, 255],
-      'surprised': [0x01, 0, 255, 255]
+      'happy': [0, 255, 0],
+      'sad': [0, 0, 255],
+      'angry': [255, 0, 0],
+      'fearful': [255, 255, 0],
+      'disgusted': [255, 255, 255],
+      'surprised': [0, 255, 255]
     }
 
-    function debounce(func, wait, immediate) {
-      var timeout;
-      return function () {
-        var context = this, args = arguments;
-        clearTimeout(timeout);
-        timeout = setTimeout(function () {
-          timeout = null;
-          if (!immediate) func.apply(context, args);
-        }, wait);
-        if (immediate && !timeout) func.apply(context, args);
-      };
-    }
-
-    const sendExpressionToLED = debounce(function (expression) {
+    const sendExpressionToLED = function (expression) {
       const colorArr = rgb_codes[expression]
       if (colorArr) {
-        sendColorToLED()
+        console.log(expression);
+        sendColorToLED(colorArr)
       }
-    }, 250);
+    };
 
     window.addEventListener('load', async function () {
       // initialize the web usb connect button and connect to availabe usb devices
@@ -172,9 +161,9 @@
       videoEl.srcObject = stream
     })
 
-  /****************/
-  /* END FACE APP */
-  /****************/
+/****************/
+/* END FACE APP */
+/****************/
   </script>
 
   <style>
