@@ -1,5 +1,9 @@
 # Workshop on Web Bluetooth, Web USB, LitElement and Zephyr
 
+## Slide Deck
+
+This project was created as a workshop for [AIoT DevFest](https://www.aiotdevfest.org/). The [slide deck](docs/webusb-webbluetooth.pdf) is included in this repo in the `/docs` folder. It's a fork of the [same workshop](https://github.com/larsgk/web-nrf52-dongle) that [Lars Knudsen](https://twitter.com/denladeside) gave at the 2019 IoT DevFest.
+
 ## Making a future proof IoT project by leveraging great technologies
 
 IoT can be really hard, there are plenty of hardware options out there, with a multitude of OSes to choose from - and that is not even thinking about how to get data to and from the device!
