@@ -117,6 +117,34 @@ nrfutil dfu serial -pkg pkg.zip -p /dev/tty.usbmodemE12DB15768271
 
 -   The LED color can be set by either USB or Bluetooth
 
+### Linux Troubleshooting
+
+Per Google's documentation on [USB Devices]([https://developer.chrome.com/apps/app_usb#caveats]): On most Linux systems, USB devices are mapped with read-only permissions by default. To open a device through the USB API, your user will need to have write access to it too. A simple solution is to set a udev rule.
+
+-   Create a file `/etc/udev/rules.d/50-nordic-nRF52840.rules` with the following content:
+
+```
+SUBSYSTEM=="usb", ATTR{idVendor}=="2fe3", ATTR{idProduct}=="0100", TAG+="uaccess"
+```
+
+-   Then, just restart the udev daemon: `service udev restart`.
+
+-   Or Alternatively: `sudo udevadm control --reload-rules`
+
+You can check if device permissions are set correctly by following these steps:
+
+-   Run `lsusb` to find the bus and device numbers.
+
+-   Run `ls -al /dev/bus/usb/[bus]/[device]`. This file should be owned by group "plugdev" and have group write permissions.
+
+If you are having trouble setting a udev rule, another avenue that Linux users in the workshop had luck doing was to enable experimental web features in Chrome:
+
+-   Paste the following command into your Chrome address bar and then enable `Experimental Web Platform features`:
+
+```
+chrome://flags/#enable-experimental-web-platform-features
+```
+
 ## 3. Serve the Web_Test Demo App
 
 -   The Web Test demo is the simplest app to run because it does not have a build step, it is a single HTML file. **NOTE**: Even though it is a single HTML file, it still needs to be served locally. You cannot just open the index.html with Chrome and expect it to work. Use whatever tech you find easiest for serving a web app locally.
