@@ -119,7 +119,7 @@ nrfutil dfu serial -pkg pkg.zip -p /dev/tty.usbmodemE12DB15768271
 
 ### Linux Troubleshooting
 
-Per Google's documentation on [USB Devices]([https://developer.chrome.com/apps/app_usb#caveats]): On most Linux systems, USB devices are mapped with read-only permissions by default. To open a device through the USB API, your user will need to have write access to it too. A simple solution is to set a udev rule.
+Per [Google's documentation on USB Devices](https://developer.chrome.com/apps/app_usb#caveats): On most Linux systems, USB devices are mapped with read-only permissions by default. To open a device through the USB API, your user will need to have write access to it too. A simple solution is to set a udev rule.
 
 -   Create a file `/etc/udev/rules.d/50-nordic-nRF52840.rules` with the following content:
 
